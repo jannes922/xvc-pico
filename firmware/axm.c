@@ -1,7 +1,6 @@
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
-#include "bsp/board.h"
 #include "tusb.h"
 #include "xvcPico.h"
 #include "axm.h"

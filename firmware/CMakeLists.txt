@@ -9,6 +9,11 @@ set(TINYUSB_DEBUG_LEVEL 0)
 # (note this can come from environment, CMake cache etc)
 set(PICO_SDK_PATH $ENV{PICO_SDK_PATH})
 
+# Target board: Raspberry Pi Pico 2 (RP2350). Requires pico-sdk >= 2.0.0.
+# Pass -DPICO_BOARD=pico to build for the original Pico (RP2040) instead;
+# the pinout is identical on both boards.
+set(PICO_BOARD pico2 CACHE STRING "Board type")
+
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
