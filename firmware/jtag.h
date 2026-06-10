@@ -37,9 +37,13 @@ static int tms_gpio = 19;
 
 #define LED_PIN      25
 
-// How does this 'feature' even work? Perhaps the 'slew rate' on Raspberry Pi
-// GPIO pins (not Pico?) is slow enough to require these delays? Or the "GPIO
-// engine" on Raspberry Pi is slow to register GPIO actions?
+// Settle time (in nops) between driving TCK low and sampling TDO. The value
+// of 3 was tuned on the RP2040 (M0+ @ 125 MHz); the faster dual-issue RP2350
+// plus its GPIO input synchronizer needs more - with 3 it produces occasional
+// single-bit TDO errors and Vivado fails to enumerate the chain, with 8 it
+// reads cleanly.
+#if PICO_RP2350
+#define jtag_delay   8
+#else
 #define jtag_delay   3
-// #define jtag_delay   5
-// #define jtag_delay   50
+#endif
