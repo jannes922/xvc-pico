@@ -95,6 +95,8 @@ void gpio_send(_Bool header, uint32_t len, uint32_t n, uint8_t *tms, uint8_t *td
   ret = libusb_bulk_transfer(dev_handle, XVCPICO_WRITE_EP, tx_buffer, header_offset, &actual_length, 1000);
   if ((ret < 0) || (actual_length != header_offset)) {
     printf("gpio_xfer_full: usb bulk write failed!\n");
+    if (ret == LIBUSB_ERROR_NO_DEVICE)
+      exit(EXIT_FAILURE);  // probe unplugged; let the service manager restart us
     return;
   }
 }
@@ -112,6 +114,8 @@ void gpio_recieve(uint32_t n, uint8_t *tdo) {
     if (ret < 0) {
       printf("gpio_xfer_full: usb bulk read failed!\n");
       printf("[Total Bytes] %d, [Return Code] %d [Actual Length] %d\n", bytes, ret, actual_length);
+      if (ret == LIBUSB_ERROR_NO_DEVICE)
+        exit(EXIT_FAILURE);  // probe unplugged; let the service manager restart us
       return;
     }
   } while (actual_length == 0);
@@ -208,6 +212,8 @@ int gpio_write(int tck, int tms, int tdi) {
   int ret = libusb_bulk_transfer(dev_handle, XVCPICO_WRITE_EP, buf, buffer_idx, &actual_length, 1000);
   if (ret < 0) {
     printf("gpio_write: usb bulk write failed\n");
+    if (ret == LIBUSB_ERROR_NO_DEVICE)
+      exit(EXIT_FAILURE);  // probe unplugged; let the service manager restart us
     return -EXIT_FAILURE;
   }
 
