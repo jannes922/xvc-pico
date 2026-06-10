@@ -3,6 +3,10 @@
 This project implements a Raspberry Pico based Xilinx Virtual Cable (XVC). It
 allows using Raspberry Pico as a JTAG adapter for programming Xilinx FPGAs.
 
+The firmware targets the Raspberry Pi Pico 2 (RP2350) by default. The original
+Pico (RP2040) is still supported via `-DPICO_BOARD=pico` (see below); the
+pinout is identical on both boards.
+
 It is derived from the excellent [pico-dirtyJtag](https://github.com/phdussud/pico-dirtyJtag/) project.
 
 A special shoutout goes to https://github.com/tom01h for crazily improving the
@@ -40,8 +44,9 @@ The project has been verified to be working with the following hardware and soft
 
 ### Building pico-xvc (for Linux users)
 
-Shortcut: Upload the pre-built `xvcPico.uf2` file to the Raspberry Pico
-Board. Done - skip to the next section.
+Shortcut: Upload the pre-built `xvcPico.uf2` file (Pico 2 / RP2350) or
+`xvcPico-rp2040.uf2` (original Pico / Pico W) to the board. Done - skip to
+the next section.
 
 Install dependencies:
 
@@ -55,7 +60,7 @@ sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi \
 mkdir ~/repos
 cd ~/repos
 
-git clone https://github.com/raspberrypi/pico-sdk.git
+git clone -b 2.2.0 https://github.com/raspberrypi/pico-sdk.git
 cd pico-sdk; git submodule update --init
 
 cd ~/repos
@@ -71,7 +76,7 @@ make
 sudo ./xvcd-pico  # run on the host computer, turn on the pico board before
 ```
 
-Build the Raspberry Pico's firmware:
+Build the firmware (Pico 2 / RP2350, the default; requires pico-sdk >= 2.0.0):
 
 ```
 cd ~/repos/xvc-pico/firmware
@@ -79,6 +84,32 @@ export PICO_SDK_PATH=${HOME}/repos/pico-sdk
 cmake .
 make -j4
 ```
+
+For the original Pico (RP2040), pass the board type when configuring:
+
+```
+cmake -DPICO_BOARD=pico .
+make -j4
+```
+
+### NixOS Notes
+
+This repository is a Nix flake. It packages the host-side daemon and ships a
+NixOS module that starts `xvcd-pico` automatically (via udev) whenever the
+probe is plugged in, and stops it on unplug:
+
+```nix
+# flake inputs
+inputs.xvc-pico.url = "github:jannes922/xvc-pico/ng";
+
+# NixOS configuration
+imports = [ inputs.xvc-pico.nixosModules.default ];
+services.xvcd-pico.enable = true;
+# services.xvcd-pico.openFirewall = true;  # only for Vivado on another machine
+```
+
+With the service running, connect Vivado via `Hardware Manager` -> `Add
+Xilinx Virtual Cable (XVC)` -> host `localhost`, port `2542`.
 
 ### Windows Notes
 
